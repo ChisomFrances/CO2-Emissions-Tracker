@@ -74,6 +74,9 @@ elif section == "Emissions vs Temperature":
 
     # Filter by year
     filtered_df = df[df['year'] == selected_year]
+    
+    #Multi-select countries
+    countries = st.multiselect("Select Countries", df['country'].unique(), default=df['country'].unique())
 
     # Top 20 countries
     top20 = filtered_df.sort_values(by="share_of_temperature_change_from_ghg", ascending=False).head(20)
