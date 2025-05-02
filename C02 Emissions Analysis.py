@@ -32,24 +32,24 @@ if section == "Historical Trends":
 
     world_df = df[df['country'] == 'World']
 
-# Streamlit app title
-st.title("World CO₂ Emissions Analysis")
+    # Streamlit app title
+    st.title("World CO₂ Emissions Analysis")
 
-# Plot CO2 vs Year
-st.subheader("World: CO₂ Emissions vs Year")
-fig, ax = plt.subplots(figsize=(12, 6))
-sns.lineplot(data=world_df, x='year', y='co2', ax=ax)
-ax.set(title="World: CO₂ Emissions vs Year", xlabel="Year", ylabel="CO₂ Emissions (Mt)")
-ax.grid(True)
-st.pyplot(fig)
+    # Plot CO2 vs Year
+    st.subheader("World: CO₂ Emissions vs Year")
+    fig, ax = plt.subplots(figsize=(12, 6))
+    sns.lineplot(data=world_df, x='year', y='co2', ax=ax)
+    ax.set(title="World: CO₂ Emissions vs Year", xlabel="Year", ylabel="CO₂ Emissions (Mt)")
+    ax.grid(True)
+    st.pyplot(fig)
 
-# Plot Cumulative CO2 vs Year
-st.subheader("World: Cumulative CO₂ Emissions vs Year")
-fig, ax = plt.subplots(figsize=(12, 6))
-sns.lineplot(data=world_df, x='year', y='cumulative_co2', ax=ax)
-ax.set(title="World: Cumulative CO₂ Emissions vs Year", xlabel="Year", ylabel="Cumulative CO₂ Emissions (Mt)")
-ax.grid(True)
-st.pyplot(fig)
+    # Plot Cumulative CO2 vs Year
+    st.subheader("World: Cumulative CO₂ Emissions vs Year")
+    fig, ax = plt.subplots(figsize=(12, 6))
+    sns.lineplot(data=world_df, x='year', y='cumulative_co2', ax=ax)
+    ax.set(title="World: Cumulative CO₂ Emissions vs Year", xlabel="Year", ylabel="Cumulative CO₂ Emissions (Mt)")
+    ax.grid(True)
+    st.pyplot(fig)
 
 # 3. Per Capita Impact and Equity Analysis
 elif section == "Per Capita Impact":
@@ -64,47 +64,46 @@ elif section == "Per Capita Impact":
                  labels={'co2_per_capita': 'CO₂ per Capita (tonnes)'})
     st.plotly_chart(fig, use_container_width=True)
 
-# 4. Contributions to Global Warming
-elif section == "Emissions and Temperature":
+# 4. Emissions and Temperature Analysis
+elif section == "Emissions vs Temperature":
     st.header("🌡️ Connecting Emissions and Temperature Change")
 
-# Sidebar filters
-st.sidebar.title("Filter")
-selected_year = st.sidebar.slider("Select Year", int(df['year'].min()), int(df['year'].max()), 2020)
+    # Sidebar filters
+    st.sidebar.title("Filter")
+    selected_year = st.sidebar.slider("Select Year", int(df['year'].min()), int(df['year'].max()), 2020)
 
-# Filter by year
-filtered_df = df[df['year'] == selected_year]
+    # Filter by year
+    filtered_df = df[df['year'] == selected_year]
 
-# Top 20 countries
-top20 = filtered_df.sort_values(by="share_of_temperature_change_from_ghg", ascending=False).head(20)
+    # Top 20 countries
+    top20 = filtered_df.sort_values(by="share_of_temperature_change_from_ghg", ascending=False).head(20)
 
-# Bottom 20 countries
-bottom20 = filtered_df.sort_values(by="share_of_temperature_change_from_ghg", ascending=True).head(20)
+    # Bottom 20 countries
+    bottom20 = filtered_df.sort_values(by="share_of_temperature_change_from_ghg", ascending=True).head(20)
 
-# Display
-st.title("🌡️ Share of Global Temperature Change from GHGs by Country")
-st.subheader(f"Year: {selected_year}")
+    # Display
+    st.title("🌡️ Share of Global Temperature Change from GHGs by Country")
+    st.subheader(f"Year: {selected_year}")
 
-col1, col2 = st.columns(2)
+    col1, col2 = st.columns(2)
 
-with col1:
-    st.markdown("### 🔺 Top 20 Countries")
-    fig_top, ax_top = plt.subplots(figsize=(8, 6))
-    sns.barplot(data=top20, y="country", x="share_of_temperature_change_from_ghg", palette="Reds_r", ax=ax_top)
-    ax_top.set_title("Top 20 Countries")
-    ax_top.set_xlabel("Share (%)")
-    ax_top.set_ylabel("Country")
-    st.pyplot(fig_top)
+    with col1:
+        st.markdown("### 🔺 Top 20 Countries")
+        fig_top, ax_top = plt.subplots(figsize=(8, 6))
+        sns.barplot(data=top20, y="country", x="share_of_temperature_change_from_ghg", palette="Reds_r", ax=ax_top)
+        ax_top.set_title("Top 20 Countries")
+        ax_top.set_xlabel("Share (%)")
+        ax_top.set_ylabel("Country")
+        st.pyplot(fig_top)
 
-with col2:
-    st.markdown("### 🔻 Bottom 20 Countries")
-    fig_bottom, ax_bottom = plt.subplots(figsize=(8, 6))
-    sns.barplot(data=bottom20, y="country", x="share_of_temperature_change_from_ghg", palette="Blues", ax=ax_bottom)
-    ax_bottom.set_title("Bottom 20 Countries")
-    ax_bottom.set_xlabel("Share (%)")
-    ax_bottom.set_ylabel("Country")
-    st.pyplot(fig_bottom)
-
+    with col2:
+        st.markdown("### 🔻 Bottom 20 Countries")
+        fig_bottom, ax_bottom = plt.subplots(figsize=(8, 6))
+        sns.barplot(data=bottom20, y="country", x="share_of_temperature_change_from_ghg", palette="Blues", ax=ax_bottom)
+        ax_bottom.set_title("Bottom 20 Countries")
+        ax_bottom.set_xlabel("Share (%)")
+        ax_bottom.set_ylabel("Country")
+        st.pyplot(fig_bottom)
 
 # 5. Interactive Choropleth Map
 elif section == "Interactive Map":
