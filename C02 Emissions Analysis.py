@@ -1,14 +1,15 @@
 import streamlit as st
 import pandas as pd
 import plotly.express as px
+import matplotlib.pyplot as plt
+import seaborn as sns
 
 st.set_page_config(page_title="CO2 Emissions Analysis", layout="wide")
 
 # 1. Load Data
 @st.cache_data
 def load_data():
-    df = pd.read_csv("climate_data.csv")
-    return df.dropna()
+    return = pd.read_csv("climate_data.csv")
 
 df = load_data()
 
@@ -29,16 +30,26 @@ st.title("🌍 Climate Change Data Explorer")
 if section == "Historical Trends":
     st.header("📈 Historical Trends & Turning Points in Emissions")
 
-    df_grouped = df.groupby('year').agg({
-        'co2': 'sum',
-        'cumulative_co2': 'sum'
-    }).reset_index()
+    world_df = df[df['country'] == 'World']
 
-    fig1 = px.line(df_grouped, x='year', y='co2', title='Annual Total CO₂ Emissions (Mt)')
-    fig2 = px.line(df_grouped, x='year', y='cumulative_co2', title='Cumulative CO₂ Emissions (Mt)')
+# Streamlit app title
+st.title("World CO₂ Emissions Analysis")
 
-    st.plotly_chart(fig1, use_container_width=True)
-    st.plotly_chart(fig2, use_container_width=True)
+# Plot CO2 vs Year
+st.subheader("World: CO₂ Emissions vs Year")
+fig, ax = plt.subplots(figsize=(12, 6))
+sns.lineplot(data=world_df, x='year', y='co2', ax=ax)
+ax.set(title="World: CO₂ Emissions vs Year", xlabel="Year", ylabel="CO₂ Emissions (Mt)")
+ax.grid(True)
+st.pyplot(fig)
+
+# Plot Cumulative CO2 vs Year
+st.subheader("World: Cumulative CO₂ Emissions vs Year")
+fig, ax = plt.subplots(figsize=(12, 6))
+sns.lineplot(data=world_df, x='year', y='cumulative_co2', ax=ax)
+ax.set(title="World: Cumulative CO₂ Emissions vs Year", xlabel="Year", ylabel="Cumulative CO₂ Emissions (Mt)")
+ax.grid(True)
+st.pyplot(fig)
 
 # 3. Per Capita Impact and Equity Analysis
 elif section == "Per Capita Impact":
@@ -53,47 +64,49 @@ elif section == "Per Capita Impact":
                  labels={'co2_per_capita': 'CO₂ per Capita (tonnes)'})
     st.plotly_chart(fig, use_container_width=True)
 
-# 4. Emissions vs Temperature Change
-elif section == "Emissions vs Temperature":
-    st.header("🌡️ Connecting Emissions to Temperature Change")
+# 4. Contributions to Global Warming
+elif section == "Emissions and Temperature":
+    st.header("🌡️ Connecting Emissions and Temperature Change")
 
-    avg_df = df.groupby('country').agg({
-        'co2': 'mean',
-        'temperature_change_from_co2': 'mean'
-    }).reset_index()
+# Sidebar filters
+st.sidebar.title("Filter")
+selected_year = st.sidebar.slider("Select Year", int(df['year'].min()), int(df['year'].max()), 2020)
 
-    fig = px.scatter(avg_df, x='co2', y='temperature_change_from_co2',
-                     hover_name='country',
-                     title="Avg Annual CO₂ vs. Temperature Change from CO₂",
-                     labels={'co2': 'Avg CO₂ Emissions (Mt)', 'temperature_change_from_co2': 'Temp Change (°C)'})
-    st.plotly_chart(fig, use_container_width=True)
+# Filter by year
+filtered_df = df[df['year'] == selected_year]
 
-# 5. Enhanced Temperature Change Analysis
-elif section == "Enhanced Temp Analysis":
-    st.header("🔥 Enhanced Temperature Change Analysis (GHG Inclusive)")
+# Top 20 countries
+top20 = filtered_df.sort_values(by="share_of_temperature_change_from_ghg", ascending=False).head(20)
 
-    enhanced_df = df.groupby('country').agg({
-        'co2': 'mean',
-        'temperature_change_from_co2': 'mean',
-        'share_of_temperature_change_from_ghg': 'mean'
-    }).reset_index()
+# Bottom 20 countries
+bottom20 = filtered_df.sort_values(by="share_of_temperature_change_from_ghg", ascending=True).head(20)
 
-    fig = px.scatter(
-        enhanced_df,
-        x='co2',
-        y='temperature_change_from_co2',
-        size='share_of_temperature_change_from_ghg',
-        hover_name='country',
-        title="CO₂ vs Temperature Change, Bubble Size = GHG Share",
-        labels={
-            'co2': 'Avg CO₂ Emissions (Mt)',
-            'temperature_change_from_co2': 'Temp Change (°C)',
-            'share_of_temperature_change_from_ghg': 'GHG Temp Share (%)'
-        }
-    )
-    st.plotly_chart(fig, use_container_width=True)
+# Display
+st.title("🌡️ Share of Global Temperature Change from GHGs by Country")
+st.subheader(f"Year: {selected_year}")
 
-# 6. Interactive Choropleth Map
+col1, col2 = st.columns(2)
+
+with col1:
+    st.markdown("### 🔺 Top 20 Countries")
+    fig_top, ax_top = plt.subplots(figsize=(8, 6))
+    sns.barplot(data=top20, y="country", x="share_of_temperature_change_from_ghg", palette="Reds_r", ax=ax_top)
+    ax_top.set_title("Top 20 Countries")
+    ax_top.set_xlabel("Share (%)")
+    ax_top.set_ylabel("Country")
+    st.pyplot(fig_top)
+
+with col2:
+    st.markdown("### 🔻 Bottom 20 Countries")
+    fig_bottom, ax_bottom = plt.subplots(figsize=(8, 6))
+    sns.barplot(data=bottom20, y="country", x="share_of_temperature_change_from_ghg", palette="Blues", ax=ax_bottom)
+    ax_bottom.set_title("Bottom 20 Countries")
+    ax_bottom.set_xlabel("Share (%)")
+    ax_bottom.set_ylabel("Country")
+    st.pyplot(fig_bottom)
+
+
+# 5. Interactive Choropleth Map
 elif section == "Interactive Map":
     st.header("🗺️ Interactive CO₂ per Capita Map")
 
@@ -112,7 +125,7 @@ elif section == "Interactive Map":
     )
     st.plotly_chart(fig, use_container_width=True)
 
-# 7. Country-Level Time Series
+#6. Country-Level Time Series
 elif section == "Country Trends":
     st.header("📊 Country-Level CO₂ & Temperature Trends")
 
