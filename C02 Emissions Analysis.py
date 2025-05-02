@@ -9,7 +9,7 @@ st.set_page_config(page_title="CO2 Emissions Analysis", layout="wide")
 # 1. Load Data
 @st.cache_data
 def load_data():
-    return = pd.read_csv("climate_data.csv")
+    return pd.read_csv("climate_data.csv")
 
 df = load_data()
 
