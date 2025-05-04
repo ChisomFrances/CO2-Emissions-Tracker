@@ -14,15 +14,17 @@ def load_data():
 df = load_data()
 
 # Sidebar
-st.sidebar.title("🧭 Navigation")
+st.sidebar.title("Navigation")
 section = st.sidebar.radio("Go to", [
     "Historical Trends",
     "Per Capita Impact",
     "Emissions vs Temperature",
-    "Enhanced Temp Analysis",
     "Interactive Map",
     "Country Trends"
 ])
+
+st.sidebar.markdown("### Filter")
+selected_year = st.sidebar.slider("Select Year", int(df['year'].min()), int(df['year'].max()), 2020)
 
 st.title("🌍 Climate Change Data Explorer")
 
@@ -32,61 +34,49 @@ if section == "Historical Trends":
 
     world_df = df[df['country'] == 'World']
 
-    # Streamlit app title
-    st.title("World CO₂ Emissions Analysis")
-
-    # Plot CO2 vs Year
+   
+# Plot CO2 vs Year
     st.subheader("World: CO₂ Emissions vs Year")
-    fig, ax = plt.subplots(figsize=(12, 6))
-    sns.lineplot(data=world_df, x='year', y='co2', ax=ax)
-    ax.set(title="World: CO₂ Emissions vs Year", xlabel="Year", ylabel="CO₂ Emissions (Mt)")
-    ax.grid(True)
-    st.pyplot(fig)
+    fig_co2 = px.line(world_df, x='year', y='co2', title="World: CO₂ Emissions vs Year",
+                  labels={'year': 'Year', 'co2': 'CO₂ Emissions (Mt)'})
+    fig_co2.update_layout(xaxis=dict(showgrid=True), yaxis=dict(showgrid=True))
+    st.plotly_chart(fig_co2, use_container_width=True)
 
-    # Plot Cumulative CO2 vs Year
+# Plot Cumulative CO2 vs Year
     st.subheader("World: Cumulative CO₂ Emissions vs Year")
-    fig, ax = plt.subplots(figsize=(12, 6))
-    sns.lineplot(data=world_df, x='year', y='cumulative_co2', ax=ax)
-    ax.set(title="World: Cumulative CO₂ Emissions vs Year", xlabel="Year", ylabel="Cumulative CO₂ Emissions (Mt)")
-    ax.grid(True)
-    st.pyplot(fig)
+    fig_cumulative = px.line(world_df, x='year', y='cumulative_co2', title="World: Cumulative CO₂ Emissions vs Year",
+                         labels={'year': 'Year', 'cumulative_co2': 'Cumulative CO₂ Emissions (Mt)'})
+    fig_cumulative.update_layout(xaxis=dict(showgrid=True), yaxis=dict(showgrid=True))
+    st.plotly_chart(fig_cumulative, use_container_width=True)
+
 
 # 3. Per Capita Impact and Equity Analysis
 elif section == "Per Capita Impact":
     st.header("👤 Per Capita Impact and Equity Analysis")
 
-    selected_year = st.slider("Select Year", int(df['year'].min()), int(df['year'].max()), 2020)
-
     top10 = df[df['year'] == selected_year].sort_values(by='co2_per_capita', ascending=False).head(10)
 
-    fig = px.bar(top10, x='country', y='co2_per_capita', 
+    fig = px.bar(top10, x='country', y='co2_per_capita',
                  title=f"Top 10 Countries by CO₂ Per Capita in {selected_year}",
                  labels={'co2_per_capita': 'CO₂ per Capita (tonnes)'})
     st.plotly_chart(fig, use_container_width=True)
 
-# 4. Emissions and Temperature Analysis
+# 4. Contributions to Global Warming
 elif section == "Emissions vs Temperature":
     st.header("🌡️ Connecting Emissions and Temperature Change")
 
-    # Sidebar filters
-    st.sidebar.title("Filter")
-    selected_year = st.sidebar.slider("Select Year", int(df['year'].min()), int(df['year'].max()), 2020)
 
     # Filter by year
     filtered_df = df[df['year'] == selected_year]
-    
+
     #Multi-select countries
     countries = st.multiselect("Select Countries", df['country'].unique(), default=df['country'].unique())
 
-    # Top 20 countries
+    # Top and Bottom 20 countries
     top20 = filtered_df.sort_values(by="share_of_temperature_change_from_ghg", ascending=False).head(20)
-
-    # Bottom 20 countries
     bottom20 = filtered_df.sort_values(by="share_of_temperature_change_from_ghg", ascending=True).head(20)
 
-    # Display
-    st.title("🌡️ Share of Global Temperature Change from GHGs by Country")
-    st.subheader(f"Year: {selected_year}")
+    st.subheader(f"Share of Global Temperature Change from GHGs by Country - {selected_year}")
 
     col1, col2 = st.columns(2)
 
@@ -113,7 +103,6 @@ elif section == "Interactive Map":
     st.header("🗺️ Interactive CO₂ per Capita Map")
 
     year = st.slider("Choose Year", int(df['year'].min()), int(df['year'].max()), 2020)
-
     map_data = df[df['year'] == year]
 
     fig = px.choropleth(
@@ -127,15 +116,13 @@ elif section == "Interactive Map":
     )
     st.plotly_chart(fig, use_container_width=True)
 
-#6. Country-Level Time Series
+# 6. Country-Level Time Series
 elif section == "Country Trends":
     st.header("📊 Country-Level CO₂ & Temperature Trends")
 
     countries = st.multiselect("Select Countries", df['country'].unique(), default=["United States", "China", "India"])
-
     metric = st.selectbox("Metric", ["co2", "co2_per_capita", "temperature_change_from_co2"])
 
     fig = px.line(df[df['country'].isin(countries)], x='year', y=metric, color='country',
                   title=f"{metric.replace('_', ' ').title()} Over Time")
-
     st.plotly_chart(fig, use_container_width=True)
