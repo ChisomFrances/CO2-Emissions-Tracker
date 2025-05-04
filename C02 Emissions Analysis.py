@@ -34,10 +34,11 @@ if section == "Historical Trends":
 
     world_df = df[df['country'] == 'World']
 
-   
+    metric = st.selectbox("Metric", ["co2", "co2_per_capita"])
+
 # Plot CO2 vs Year
     st.subheader("World: CO₂ Emissions vs Year")
-    fig_co2 = px.line(world_df, x='year', y='co2', title="World: CO₂ Emissions vs Year",
+    fig_co2 = px.line(world_df, x='year', y=metric, title="World: CO₂ Emissions vs Year",
                   labels={'year': 'Year', 'co2': 'CO₂ Emissions (Mt)'})
     fig_co2.update_layout(xaxis=dict(showgrid=True), yaxis=dict(showgrid=True))
     st.plotly_chart(fig_co2, use_container_width=True)
@@ -61,15 +62,14 @@ elif section == "Per Capita Impact":
                  labels={'co2_per_capita': 'CO₂ per Capita (tonnes)'})
     st.plotly_chart(fig, use_container_width=True)
 
-# 4. Contributions to Global Warming
+# 4. Contributions to Global Warming 
 elif section == "Emissions vs Temperature":
     st.header("🌡️ Connecting Emissions and Temperature Change")
-
 
     # Filter by year
     filtered_df = df[df['year'] == selected_year]
 
-    #Multi-select countries
+    # Multi-select countries
     countries = st.multiselect("Select Countries", df['country'].unique(), default=df['country'].unique())
 
     # Top and Bottom 20 countries
@@ -82,28 +82,42 @@ elif section == "Emissions vs Temperature":
 
     with col1:
         st.markdown("### 🔺 Top 20 Countries")
-        fig_top, ax_top = plt.subplots(figsize=(8, 6))
-        sns.barplot(data=top20, y="country", x="share_of_temperature_change_from_ghg", palette="Reds_r", ax=ax_top)
-        ax_top.set_title("Top 20 Countries")
-        ax_top.set_xlabel("Share (%)")
-        ax_top.set_ylabel("Country")
-        st.pyplot(fig_top)
+        top20 = top20.sort_values(by="share_of_temperature_change_from_ghg", ascending=True)  # Reverse for bar orientation
+        fig_col1 = px.bar(
+            top20,
+            x='share_of_temperature_change_from_ghg',
+            y='country',
+            orientation='h',
+            title='Top 20 Countries',
+            labels={'share_of_temperature_change_from_ghg': 'Share (%)', 'country': 'Country'}
+        )
+
+        fig_col1.update_layout(height=30 * len(top20), yaxis=dict(categoryorder='total ascending', automargin=True, showgrid=True),margin=dict(l=150, r=20, t=40, b=40),xaxis=dict(showgrid=True)
+)
+
+        st.plotly_chart(fig_col1, use_container_width=True)
 
     with col2:
         st.markdown("### 🔻 Bottom 20 Countries")
-        fig_bottom, ax_bottom = plt.subplots(figsize=(8, 6))
-        sns.barplot(data=bottom20, y="country", x="share_of_temperature_change_from_ghg", palette="Blues", ax=ax_bottom)
-        ax_bottom.set_title("Bottom 20 Countries")
-        ax_bottom.set_xlabel("Share (%)")
-        ax_bottom.set_ylabel("Country")
-        st.pyplot(fig_bottom)
+        bottom20 = bottom20.sort_values(by="share_of_temperature_change_from_ghg", ascending=True)
+        fig_col2 = px.bar(
+            bottom20,
+            x='share_of_temperature_change_from_ghg',
+            y='country',
+            orientation='h',
+            title='Bottom 20 Countries',
+            labels={'share_of_temperature_change_from_ghg': 'Share (%)', 'country': 'Country'}
+        )
+        fig_col2.update_layout(height=30 * len(bottom20), yaxis=dict(categoryorder='total ascending', automargin=True,showgrid=True), margin=dict(l=150, r=20, t=40, b=40),xaxis=dict(showgrid=True))
+
+        st.plotly_chart(fig_col2, use_container_width=True)
+
 
 # 5. Interactive Choropleth Map
 elif section == "Interactive Map":
     st.header("🗺️ Interactive CO₂ per Capita Map")
 
-    year = st.slider("Choose Year", int(df['year'].min()), int(df['year'].max()), 2020)
-    map_data = df[df['year'] == year]
+    map_data = df[df['year'] == selected_year]
 
     fig = px.choropleth(
         map_data,
@@ -112,7 +126,7 @@ elif section == "Interactive Map":
         color="co2_per_capita",
         hover_name="country",
         color_continuous_scale="Viridis",
-        title=f"CO₂ Emissions per Capita in {year}"
+        title=f"CO₂ Emissions per Capita in {selected_year}"
     )
     st.plotly_chart(fig, use_container_width=True)
 
