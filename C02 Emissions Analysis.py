@@ -215,19 +215,27 @@ elif section == "Emissions and Temperature":
 
     with col2:
         st.markdown("<h3 style='text-align:right;margin-right: 70px'>Bottom 20 Countries</h3>",
-        unsafe_allow_html=True)
-        fig_col2 = px.bar(
-            bottom20.sort_values(by="share_of_temperature_change_from_ghg"),
-            x='share_of_temperature_change_from_ghg',
-            y='country',
-            color_discrete_sequence=['#738678'],
-            orientation='h',
-            labels={'share_of_temperature_change_from_ghg': 'Share (%)', 'country': 'Country'}
+                    unsafe_allow_html=True)
+        
+        df_to_display = bottom20[["country", "share_of_temperature_change_from_ghg"]].copy()
+        df_to_display = df_to_display.rename(columns={
+            "country": "Country",
+            "share_of_temperature_change_from_ghg": "Share of Temp Change (%)"
+        })
+        df_to_display = df_to_display.reset_index(drop=True)
+         
+        df_to_display.index = range(1, len(df_to_display) + 1)
+        df_to_display["Share of Temp Change (%)"] = df_to_display["Share of Temp Change (%)"].round(0).astype(int)
+        
+        
+        def highlight_xanadu(val):
+            color = '#738678'  # xanadu
+            return f'background-color: {color}; color: white;' if isinstance(val, int) else ''
+        
+    
+        styled_df = df_to_display.style.applymap(
+            lambda v: 'background-color: #738678; color: white;' if isinstance(v, int) else '', 
+            subset=['Share of Temp Change (%)']
         )
-        fig_col2.update_layout(
-            height=600,
-            xaxis=dict(title='Share (%)', showgrid=True),
-            yaxis=dict(categoryorder='total ascending', automargin=True),
-            margin=dict(l=150, r=20, t=40, b=40)
-        )
-        st.plotly_chart(fig_col2, use_container_width=True)
+        
+        st.dataframe(styled_df, height=600) 
