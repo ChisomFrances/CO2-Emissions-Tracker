@@ -85,7 +85,7 @@ if section == "Global Historical Trends":
 # Plot CO2 vs Year
     fig_co2 = px.line(world_df, x='year', y=metric,
                       color_discrete_sequence=['#738678'],
-                  labels={'year': 'Year', 'co2': 'CO₂  (million tonnes)','co2_per_capita': 'CO₂ Per Capita (tonnes)'})
+                  labels={'year': 'Year', 'co2': 'CO₂  (Mt)','co2_per_capita': 'CO₂ Per Capita (t)'})
     fig_co2.update_layout(xaxis=dict(showgrid=True), yaxis=dict(showgrid=True))
     st.plotly_chart(fig_co2, use_container_width=True)
 
@@ -124,7 +124,7 @@ elif section == "Country Trends with Interactive Map":
         locations="country",
         locationmode="country names",
         color=metric,
-        labels={'co2': 'CO₂  (million tonnes)', 'co2_per_capita': 'CO₂ Per Capita (tonnes)'},
+        labels={'co2': 'CO₂  (Mt)', 'co2_per_capita': 'CO₂ Per Capita (t)'},
         hover_name="country",
         color_continuous_scale=PX_CONTINUOUS,
         template='plotly_white'
@@ -225,6 +225,8 @@ elif section == "Emissions and Temperature":
         df_to_display = df_to_display.reset_index(drop=True)
          
         df_to_display.index = range(1, len(df_to_display) + 1)
+        
+        
         df_to_display["Share of Temp Change (%)"] = df_to_display["Share of Temp Change (%)"].round(0).astype(int)
         
         
@@ -238,4 +240,4 @@ elif section == "Emissions and Temperature":
             subset=['Share of Temp Change (%)']
         )
         
-        st.dataframe(styled_df, height=600) 
+        st.dataframe(styled_df, height=600)  
